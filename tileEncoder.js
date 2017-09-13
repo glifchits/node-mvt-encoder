@@ -1,0 +1,164 @@
+var fs = require('fs')
+var vt = require('@mapbox/vector-tile')
+var Pbf = require('pbf')
+var gdal = require('gdal')
+var compile = require('pbf/compile')
+var schema = require('protocol-buffers-schema')
+var proto = schema.parse(fs.readFileSync('vector_tile.proto'))
+var Tile = compile(proto).tile
+
+
+const EXTENT = 4096
+
+// these command values are defined in vector_tile.proto
+const MOVE_TO = 1
+const LINE_TO = 2
+const CLOSE_PATH = 7
+
+
+function zigzagEncode(n) {
+  // the signed coordinates need to be zigzag encoded in order to fit in
+  // an (unsigned) uint32 array for the protobuf
+  return (n << 1) ^ (n >> 31)
+}
+
+
+function encodeCommand(cmd, reps) {
+  // enforce that action is always only ever repeated once
+  // since its repeated once, 1 is shifted to the left by 3 bits
+  return (reps << 3) | cmd
+}
+
+
+function encodeRing(ring) {
+  // Params: ring {array<pt>}
+  const [firstPoint, ...points] = ring
+  // ignore the last point, it is the same as the first point
+  const midPoints = points.slice(0, -1)
+
+  let actions = [
+    // this is the first action
+    encodeCommand(MOVE_TO, 1),
+    zigzagEncode(firstPoint.x), zigzagEncode(EXTENT - firstPoint.y)
+  ]
+
+  let linesTo = []
+  let prevPoint = firstPoint
+  midPoints.forEach(point => {
+    const dx = point.x - prevPoint.x
+    const dy = prevPoint.y - point.y
+    linesTo.push([zigzagEncode(dx), zigzagEncode(dy)])
+    prevPoint = point
+  })
+
+  actions.push(encodeCommand(LINE_TO, linesTo.length))
+  linesTo.forEach(movement => actions.push(movement))
+
+  actions.push(encodeCommand(CLOSE_PATH, 1))
+
+  // flatten the actions list; this produces the encoding
+  const enc = actions.reduce((x, y) => x.concat(y), [])
+  return enc
+}
+
+
+function encodeGeometry(geom) {
+  /**
+   * Params: {GDAL geometry} geom
+   * Returns: {Array<int>} an MVT encoding of the geometry
+   */
+  // TODO: enforce ring winding order
+  let encodedRings = []
+
+  for (let ringIdx = 0; ringIdx < geom.rings.count(); ringIdx++) {
+    const ring = geom.rings.get(ringIdx)
+    encodedRings.push(encodeRing(ring.points.toArray()))
+  }
+
+  // flatten the ring encodings to produce encoding for full geometry
+  const encoding = encodedRings.reduce((x, y) => x.concat(y), [])
+  return Uint32Array.from(encoding)
+}
+
+
+function encodeFeatures(features) {
+  /**
+   * Returns: obj with keys, values, features
+   */
+  let encodedKeys = []
+  let encodedValues = []
+  let encodedFeatures = []
+
+  function getGeomType(geometry) {
+    const geomType = {
+      'POLYGON': 'Polygon',
+      'POINT': 'Point',
+      'LINESTRING': 'LineString',
+    }[geometry.name]
+    if (geomType in Tile.GeomType) {
+      return Tile.GeomType[geomType].value
+    } else {
+      return Tile.GeomType['Unknown'].value
+    }
+  }
+
+  features.forEach((feature, idx) => {
+    const geom = gdal.Geometry.fromWKT(feature.geometry)
+    encodedFeatures.push({
+      id: idx,
+      tags: [],
+      type: getGeomType(geom), // POLYGON
+      geometry: encodeGeometry(geom)
+    })
+  })
+
+  return {
+    keys: encodedKeys,
+    values: encodedValues,
+    features: encodedFeatures,
+  }
+}
+
+
+function addLayer(layerSpec) {
+  const encoded = encodeFeatures(layerSpec.features)
+  const { features, keys, values } = encoded
+  let layer = {}
+  layer.version = 1
+  layer.name = layerSpec.name
+  layer.features = features
+  layer.keys = keys
+  layer.values = values
+  layer.extent = 4096
+  return layer
+}
+
+
+function tileEncoder(layerSpecs) {
+  /**
+   * input: tileSpec {Array<Object>} a list of layers conforming to the tile
+   * layer format defined in https://github.com/tilezen/mapbox-vector-tile
+   * output: a Mapbox vector tile PBF
+   */
+   const tileData = { layers: layerSpecs.map(addLayer) }
+   let tilePbf = new Pbf()
+   Tile.write(tileData, tilePbf)
+   tilePbf.finish()
+   return tilePbf
+}
+
+
+module.exports = tileEncoder
+
+if (require.main === module) {
+    var test = require('tape')
+
+    let ring = [
+      {x:0, y:0},
+      {x:0, y:1},
+      {x:1, y:1},
+      {x:1, y:0},
+    ]
+    console.log(ring)
+    console.log(encodeRing(ring))
+}

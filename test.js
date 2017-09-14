@@ -102,3 +102,34 @@ test('test simple properties', t => {
   t.equal(properties.score, expectedProperties.score)
 
 })
+
+
+test('test real world geometries', t => {
+
+  t.plan(7)
+
+  var spec = JSON.parse(fs.readFileSync('./fixtures/edmonton.json'))
+  var enc = tileEncode(spec)
+  var tile = new vt.VectorTile(enc)
+  var tileBuffer = fs.readFileSync('./fixtures/edmonton.mvt')
+  var expectedTile = new vt.VectorTile(new Pbf(tileBuffer))
+
+  var aLayer = tile.layers.blocks
+  var eLayer = expectedTile.layers.blocks
+
+  t.equal(aLayer.length, eLayer.length)
+
+  var aFeat0 = aLayer.feature(305)
+  var eFeat0 = eLayer.feature(305)
+  t.equal(aFeat0.properties.block_id, eFeat0.properties.block_id)
+
+  var aGeom = aFeat0.loadGeometry()[0]
+  var eGeom = eFeat0.loadGeometry()[0]
+  t.equal(aGeom.length, eGeom.length)
+
+  t.equal(aGeom[0].x, eGeom[0].x)
+  t.equal(aGeom[4].x, eGeom[4].x)
+  t.equal(aGeom[5].y, eGeom[5].y)
+  t.equal(aGeom[7].y, eGeom[7].y)
+
+})

@@ -6,7 +6,6 @@ var compile = require('pbf/compile')
 var schema = require('protocol-buffers-schema')
 var proto = schema.parse(fs.readFileSync('vector_tile.proto'))
 var Tile = compile(proto).tile
-
 var tileEncode = require('./tileEncoder.js')
 // var tileSpec = JSON.parse(fs.readFileSync('./fixtures/alberta-01.json'))
 // var tileBuffer = fs.readFileSync('./fixtures/alberta-01.mvt')
@@ -14,7 +13,28 @@ var tileEncode = require('./tileEncoder.js')
 // var actualTile = new vt.VectorTile(tileEncode(tileSpec))
 
 
-test('simple test', t => {
+test('test string properties', t => {
+
+  t.plan(3)
+
+  var spec = JSON.parse(fs.readFileSync('./fixtures/tile_with_string.json'))
+  var enc = tileEncode(spec)
+  var tile = new vt.VectorTile(enc)
+
+  var tileBuffer = fs.readFileSync('./fixtures/tile_with_string.mvt')
+  var expectedTile = new vt.VectorTile(new Pbf(tileBuffer))
+
+  var properties = tile.layers.mytile.feature(0).properties
+  var xproperties = expectedTile.layers.mytile.feature(0).properties
+
+  t.equal(properties.name, xproperties.name)
+  t.equal(properties.test, xproperties.test)
+  t.equal(properties.hello, xproperties.hello)
+
+})
+
+
+test('test simple geometry', t => {
 
   t.plan(4)
 

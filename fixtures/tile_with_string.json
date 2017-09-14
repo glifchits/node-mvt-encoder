@@ -1,0 +1,13 @@
+[{
+    "name": "mytile",
+    "features": [
+      {
+        "geometry": "POLYGON ((0 0, 0 1, 1 1, 1 0, 0 0))",
+        "properties": {
+          "hello": "world",
+          "name": "world",
+          "test": "wow!"
+        }
+      }
+    ]
+}]

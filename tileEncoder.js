@@ -89,6 +89,38 @@ function encodeFeatures(features) {
   let encodedValues = []
   let encodedFeatures = []
 
+  let keyMap = {}
+  let valMap = {}
+
+  function encodeProperties(properties) {
+    if (
+      typeof properties === 'undefined' ||
+      Object.keys(properties).length === 0
+    ) {
+      return []
+    }
+    const keyVals = Object.entries(properties)
+
+    const tagPairs = keyVals.map(entry => {
+      const [key, val] = entry
+
+      if (!(key in keyMap)) {
+        let keyIdx = (encodedKeys.push(key) - 1)
+        keyMap[key] = keyIdx
+      }
+
+      if (!(val in valMap)) {
+        let valIdx = (encodedValues.push(val) - 1)
+        valMap[val] = valIdx
+      }
+
+      return [keyMap[key], valMap[val]]
+    })
+
+    // encoded tags is the flattened list of tag pairs
+    return tagPairs.reduce((a, b) => a.concat(b))
+  }
+
   function getGeomType(geometry) {
     const geomType = {
       'POLYGON': 'Polygon',
@@ -106,7 +138,7 @@ function encodeFeatures(features) {
     const geom = gdal.Geometry.fromWKT(feature.geometry)
     encodedFeatures.push({
       id: idx,
-      tags: [],
+      tags: encodeProperties(feature.properties),
       type: getGeomType(geom), // POLYGON
       geometry: encodeGeometry(geom)
     })
@@ -114,8 +146,26 @@ function encodeFeatures(features) {
 
   return {
     keys: encodedKeys,
-    values: encodedValues,
+    values: encodedValues.map(protobufEncodeValue),
     features: encodedFeatures,
+  }
+}
+
+
+function protobufEncodeValue(value) {
+  switch (typeof value) {
+    case "string":
+      return { string_value: value }
+    case "boolean":
+      return { bool_value: value }
+    case "number":
+      if (Number.isSafeInteger(value)) {
+        return { int_value: value }
+      } else {
+        return { double_value: value }
+      }
+    default:
+      throw new Error(`Value type '${typeof value}' is not yet supported`)
   }
 }
 

@@ -7,10 +7,6 @@ var schema = require('protocol-buffers-schema')
 var proto = schema.parse(fs.readFileSync('vector_tile.proto'))
 var Tile = compile(proto).tile
 var tileEncode = require('./tileEncoder.js')
-// var tileSpec = JSON.parse(fs.readFileSync('./fixtures/alberta-01.json'))
-// var tileBuffer = fs.readFileSync('./fixtures/alberta-01.mvt')
-// var expectedTile = new vt.VectorTile(new Pbf(tileBuffer))
-// var actualTile = new vt.VectorTile(tileEncode(tileSpec))
 
 
 test('test string properties', t => {
@@ -20,16 +16,11 @@ test('test string properties', t => {
   var spec = JSON.parse(fs.readFileSync('./fixtures/tile_with_string.json'))
   var enc = tileEncode(spec)
   var tile = new vt.VectorTile(enc)
-
-  var tileBuffer = fs.readFileSync('./fixtures/tile_with_string.mvt')
-  var expectedTile = new vt.VectorTile(new Pbf(tileBuffer))
-
   var properties = tile.layers.mytile.feature(0).properties
-  var xproperties = expectedTile.layers.mytile.feature(0).properties
 
-  t.equal(properties.name, xproperties.name)
-  t.equal(properties.test, xproperties.test)
-  t.equal(properties.hello, xproperties.hello)
+  t.equal(properties.hello, "world")
+  t.equal(properties.name, "world")
+  t.equal(properties.test, "wow!")
 
 })
 
@@ -57,11 +48,12 @@ test('test simple geometry', t => {
 
   let f = layer.feature(0)
 
-  var coords = f.toGeoJSON(0, 0, 0)['geometry']['coordinates']
-  t.ok(coords.length > 0)
+  var coords = f.toGeoJSON(0, 0, 0)['geometry']['coordinates'][0]
+
+  t.equal(coords.length, 5)
 
   // assert that the geojson features are actual numbers
-  t.ok(coords[0].reduce((a, b) => a.concat(b)).every(c => !isNaN(c)))
+  t.ok(coords.reduce((a, b) => a.concat(b)).every(c => !isNaN(c)))
 
 })
 
@@ -110,34 +102,3 @@ test('test simple properties', t => {
   t.equal(properties.score, expectedProperties.score)
 
 })
-
-//
-// test('tile test', t => {
-//
-//   t.plan(4)
-//
-//   // same number of layers
-//   t.equal(
-//     Object.keys(actualTile.layers).length,
-//     Object.keys(expectedTile.layers).length
-//   )
-//
-//   var actualLayer = actualTile.layers.blocks
-//   var expectedLayer = expectedTile.layers.blocks
-//
-//   // same number of features in the `blocks` layer
-//   t.equal(
-//     actualLayer.length,
-//     expectedLayer.length,
-//   )
-//
-//   // assert generated layer has geojson features
-//   var actualFeature = actualLayer.feature(0)
-//   var expectedFeature = expectedLayer.feature(0)
-//   var coords = actualFeature.toGeoJSON(0, 0,0)['geometry']['coordinates']
-//   t.ok(coords.length > 0)
-//
-//   // assert that the geojson features are actual numbers
-//   t.ok(coords[0].reduce((a, b) => a.concat(b)).every(c => !isNaN(c)))
-//
-// })

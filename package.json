@@ -22,7 +22,7 @@
     "vector",
     "tile"
   ],
-  "author": "George Lifchits <me@georgelifchits.ca> (https://georgelifchits.ca/)",
+  "author": "George Lifchits <me@georgelifchits.ca> (https://georgelifchits.ca)",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/glifchits/node-mvt-encoder/issues"

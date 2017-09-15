@@ -1,11 +1,7 @@
 var fs = require('fs')
-var test = require('tape')
 var vt = require('@mapbox/vector-tile')
 var Pbf = require('pbf')
-var compile = require('pbf/compile')
-var schema = require('protocol-buffers-schema')
-var proto = schema.parse(fs.readFileSync('vector_tile.proto'))
-var Tile = compile(proto).tile
+var test = require('tape')
 var tileEncode = require('./tileEncoder.js')
 
 

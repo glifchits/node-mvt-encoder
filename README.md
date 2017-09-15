@@ -8,6 +8,13 @@ A Node.js utility to encode a vector tile spec into a Mapbox vector tile.
 npm install mvt-encoder
 ```
 
+[node-gdal](https://github.com/naturalatlas/node-gdal) is a dependency of this
+project. It requires `gdal` to be installed in your environment:
+
+```sh
+apt-get update -y && apt-get install -y libproj-dev gdal-bin
+```
+
 ## Usage
 
 ```js

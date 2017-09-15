@@ -1,7 +1,7 @@
 {
   "name": "mvt-encoder",
   "description": "A Node.js utility to encode a vector tile schema into a Mapbox vector tile.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "main": "index.js",
   "dependencies": {
     "gdal": "^0.9.6",

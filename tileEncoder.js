@@ -1,10 +1,12 @@
 var fs = require('fs')
 var vt = require('@mapbox/vector-tile')
 var Pbf = require('pbf')
+var path = require('path')
 var gdal = require('gdal')
 var compile = require('pbf/compile')
 var schema = require('protocol-buffers-schema')
-var proto = schema.parse(fs.readFileSync('vector_tile.proto'))
+var protoFile = path.join(__dirname, 'vector_tile.proto')
+var proto = schema.parse(fs.readFileSync(protoFile))
 var Tile = compile(proto).tile
 
 

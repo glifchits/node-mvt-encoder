@@ -1,6 +1,6 @@
 # node-mvt-encoder
 
-A Node.js utility to encode a vector tile schema into a Mapbox vector tile.
+A Node.js utility to encode a vector tile spec into a Mapbox vector tile.
 
 ## Installation
 
@@ -30,6 +30,22 @@ var decoded = new VectorTile(encoded)
 console.log(decoded.layers)
 // { blocks: VectorTileLayer {...} }
 ```
+
+## Tile specification
+
+The `tileEncode` function exported in this module takes one parameter: a "tile
+spec". This was inspired by Mapzen's
+[mapbox-vector-tile](https://github.com/tilezen/mapbox-vector-tile) package.
+
+A **"tile spec"** is an *array* of *"layer specs"*.
+
+a **"layer spec"** is an *object* with the properties:
+
+* **`name`**: the name of the layer (`string`)
+* **`features`**: an *array* of *objects* with the properties:
+  * **`geometry`**: a *WKT* representation of a feature geometry. Coordinates
+    are relative to the tile, scaled in the range [0, 4096)
+  * **`properties`**: an *object* with arbitrary key/values.
 
 ## Notes
 

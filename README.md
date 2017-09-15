@@ -1,4 +1,4 @@
-# node-mvt-encoder
+# node-mvt-encoder [![Build Status](https://api.travis-ci.org/glifchits/node-mvt-encoder.svg?branch=master)](https://travis-ci.org/glifchits/node-mvt-encoder)
 
 A Node.js utility to encode a vector tile spec into a Mapbox vector tile.
 

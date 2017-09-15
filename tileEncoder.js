@@ -1,5 +1,4 @@
 var fs = require('fs')
-var vt = require('@mapbox/vector-tile')
 var Pbf = require('pbf')
 var path = require('path')
 var gdal = require('gdal')
@@ -201,16 +200,3 @@ function tileEncoder(layerSpecs) {
 
 
 module.exports = tileEncoder
-
-if (require.main === module) {
-    var test = require('tape')
-
-    let ring = [
-      {x:0, y:0},
-      {x:0, y:1},
-      {x:1, y:1},
-      {x:1, y:0},
-    ]
-    console.log(ring)
-    console.log(encodeRing(ring))
-}

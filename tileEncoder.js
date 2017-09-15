@@ -180,7 +180,7 @@ function addLayer(layerSpec) {
   layer.features = features
   layer.keys = keys
   layer.values = values
-  layer.extent = 4096
+  layer.extent = EXTENT
   return layer
 }
 

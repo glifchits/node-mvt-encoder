@@ -2,7 +2,13 @@
 
 A Node.js utility to encode a vector tile schema into a Mapbox vector tile.
 
-Note:
+## Installation
+
+```sh
+npm install mvt-encoder
+```
+
+## Notes
 
 * Only tested for Polygon features
 * Does not quantize geometry to the tile grid

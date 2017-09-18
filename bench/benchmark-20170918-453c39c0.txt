@@ -1,0 +1,4 @@
+As of: https://github.com/glifchits/node-mvt-encoder/commit/453c39c0
+Empty tile test x 429,997 ops/sec ±1.64% (80 runs sampled)
+Simple string test x 21,408 ops/sec ±4.80% (78 runs sampled)
+Edmonton encode test x 52.84 ops/sec ±4.31% (52 runs sampled)

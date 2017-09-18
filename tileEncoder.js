@@ -2,11 +2,7 @@ var fs = require('fs')
 var Pbf = require('pbf')
 var path = require('path')
 var gdal = require('gdal')
-var compile = require('pbf/compile')
-var schema = require('protocol-buffers-schema')
-var protoFile = path.join(__dirname, 'vector_tile.proto')
-var proto = schema.parse(fs.readFileSync(protoFile))
-var Tile = compile(proto).tile
+var Tile = require('./vector_tile_protobuf.js').tile
 
 
 const EXTENT = 4096
@@ -129,9 +125,9 @@ function encodeFeatures(features) {
       'LINESTRING': 'LineString',
     }[geometry.name]
     if (geomType in Tile.GeomType) {
-      return Tile.GeomType[geomType].value
+      return Tile.GeomType[geomType]
     } else {
-      return Tile.GeomType['Unknown'].value
+      return Tile.GeomType['Unknown']
     }
   }
 

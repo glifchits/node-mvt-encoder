@@ -129,3 +129,18 @@ test('test real world geometries', t => {
   t.equal(aGeom[7].y, eGeom[7].y)
 
 })
+
+
+test('unsupported feature geometry type fails', t => {
+
+  t.plan(1)
+
+  var spec = JSON.parse(fs.readFileSync('./fixtures/invalid-featuregeom.json'))
+  const tryEncode = () => tileEncode(spec)
+
+  t.throws(
+    tryEncode,
+    /feature geometry type MULTIPOLYGON is not supported at this time/
+  )
+
+})

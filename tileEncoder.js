@@ -119,16 +119,22 @@ function encodeFeatures(features) {
   }
 
   function getGeomType(geometry) {
-    const geomType = {
-      'POLYGON': 'Polygon',
-      'POINT': 'Point',
-      'LINESTRING': 'LineString',
-    }[geometry.name]
-    if (geomType in Tile.GeomType) {
-      return Tile.GeomType[geomType]
-    } else {
-      return Tile.GeomType['Unknown']
+    if (geometry.name !== 'POLYGON') {
+      const msg = `feature geometry type ${geometry.name}`
+      + ` is not supported at this time.`
+      throw new Error(msg)
     }
+    return Tile.GeomType['Polygon']
+    // const geomType = {
+    //   'POLYGON': 'Polygon',
+    //   'POINT': 'Point',
+    //   'LINESTRING': 'LineString',
+    // }[geometry.name]
+    // if (geomType in Tile.GeomType) {
+    //   return Tile.GeomType[geomType]
+    // } else {
+    //   return Tile.GeomType['Unknown']
+    // }
   }
 
   features.forEach((feature, idx) => {
@@ -136,7 +142,7 @@ function encodeFeatures(features) {
     encodedFeatures.push({
       id: idx,
       tags: encodeProperties(feature.properties),
-      type: getGeomType(geom), // POLYGON
+      type: getGeomType(geom),
       geometry: encodeGeometry(geom)
     })
   })
